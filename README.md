@@ -11,11 +11,24 @@ docker-compose up --build
 
 ## Local Development
 
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
+
 ```bash
 cp .env.example .env
 # Set CACHE_DIR=data in .env (instead of /app/data)
-pip install -e ".[dev]"
-uvicorn app.main:app --reload
+uv sync                          # install all deps including dev
+uv run uvicorn app.main:app --reload
+```
+
+### Common Commands
+
+```bash
+uv run pytest                    # run tests
+uv run ruff check .              # lint
+uv run ruff format .             # format
+uv add <package>                 # add a dependency
+uv add --group dev <package>     # add a dev dependency
+uv lock --upgrade                # upgrade all deps
 ```
 
 API: `http://localhost:8000`
