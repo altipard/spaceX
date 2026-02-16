@@ -3,7 +3,6 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
-
 # Pydantic Settings priority (highest wins):
 #   1. System environment variable   (export CACHE_TTL=600)
 #   2. .env file                     (CACHE_TTL=600)

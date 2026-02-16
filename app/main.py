@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
-from app.exceptions import ResourceNotFoundError, SpaceXAPIError, CacheError
+
+from app.exceptions import CacheError, ResourceNotFoundError, SpaceXAPIError
 
 app = FastAPI(
     title="SpaceX Launch Tracker",

@@ -2,13 +2,6 @@
 
 FastAPI backend that consumes the [SpaceX v4 API](https://api.spacexdata.com/v4).
 
-## Quick Start (Docker)
-
-```bash
-cp .env.example .env
-docker-compose up --build
-```
-
 ## Local Development
 
 Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).

@@ -3,7 +3,7 @@
 # routers import these — never instantiate services directly.
 
 
-from app.config import get_settings, Settings
+from app.config import Settings, get_settings
 
 
 def get_settings_dep() -> Settings:
