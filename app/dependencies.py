@@ -4,7 +4,12 @@
 
 
 from app.config import Settings, get_settings
+from app.services.spacex_client import SpaceXClient
 
 
 def get_settings_dep() -> Settings:
     return get_settings()
+
+
+def get_spacex_client() -> SpaceXClient:
+    return SpaceXClient(get_settings())
