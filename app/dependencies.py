@@ -13,3 +13,7 @@ def get_settings_dep() -> Settings:
 
 def get_spacex_client() -> SpaceXClient:
     return SpaceXClient(get_settings())
+
+
+def get_cache_service() -> CacheService:
+    return CacheService(get_settings())
