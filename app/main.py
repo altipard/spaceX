@@ -3,6 +3,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from app.exceptions import CacheError, ResourceNotFoundError, SpaceXAPIError
+from app.routers import launches
 
 app = FastAPI(
     title="SpaceX Launch Tracker",
@@ -10,6 +11,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(launches.router)
 
 # services raise the exceptions, handlers map them to HTTP responses.
 # routers never catch exceptions manually — they bring them up to here.
