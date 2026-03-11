@@ -1,6 +1,5 @@
 import json
 import sqlite3
-import threading
 import time
 
 from app.config import Settings
@@ -14,25 +13,11 @@ class CacheService:
     cache entry.  Stale entries are served only when the TTL hasn't
     expired yet — after that we return None and let the caller re-fetch.
 
-    Singleton pattern — only one instance exists per process.
-    repeated calls return the same instance.
+    Lifecycle managed by FastAPI's lifespan — created at startup,
+    stored on app.state, closed at shutdown.
     """
 
-    _instance: "CacheService | None" = None
-    _lock: threading.Lock = threading.Lock()
-
-    def __new__(cls, settings: Settings) -> "CacheService":
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self, settings: Settings) -> None:
-        if hasattr(self, "_initialised"):
-            return
-        self._initialised = True
-
         self._ttl = settings.cache_ttl
         db_path = settings.cache_dir / "spacex_cache.db"
 
@@ -91,3 +76,7 @@ class CacheService:
                 self._conn.execute("DELETE FROM cache")
         except sqlite3.Error as exc:
             raise CacheError(f"Cache clear failed: {exc}") from exc
+
+    def close(self) -> None:
+        """Close the underlying SQLite connection."""
+        self._conn.close()
