@@ -4,6 +4,7 @@
 
 
 from app.config import Settings, get_settings
+from app.services.cache import CacheService
 from app.services.spacex_client import SpaceXClient
 
 
