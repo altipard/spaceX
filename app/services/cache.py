@@ -15,6 +15,11 @@ class CacheService:
 
     Lifecycle managed by FastAPI's lifespan — created at startup,
     stored on app.state, closed at shutdown.
+
+    **The invalidation strategy has three levels:**
+    1. **Automatic** — TTL expires, next request fetches again
+    2. **Per request** — `?refresh=true` bypasses the cache specifically
+    3. **Global by route** — `DELETE /cache` deletes everything
     """
 
     def __init__(self, settings: Settings) -> None:

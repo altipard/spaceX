@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies import get_cache_service, get_spacex_client
 from app.models import Launchpad
@@ -12,7 +12,13 @@ router = APIRouter(prefix="/launchpads", tags=["launchpads"])
 async def list_launchpads(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
+    refresh: bool = Query(False, description="bypass cache and fetch fresh data from SpaceX API"),
 ):
+    if refresh:
+        launchpads = await client.get_launchpads()
+        cache.set("/launchpads", [lp.model_dump(mode="json") for lp in launchpads])
+        return launchpads
+
     cached = cache.get("/launchpads")
     if cached is not None:
         return [Launchpad.model_validate(item) for item in cached]

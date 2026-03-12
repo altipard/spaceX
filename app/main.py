@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.exceptions import CacheError, ResourceNotFoundError, SpaceXAPIError
-from app.routers import launches, rockets, launchpads, statistics
+from app.routers import launches, rockets, launchpads, statistics, cache
 from app.services.cache import CacheService
 from app.services.spacex_client import SpaceXClient
 
@@ -43,6 +43,7 @@ app.include_router(launches.router)
 app.include_router(rockets.router)
 app.include_router(launchpads.router)
 app.include_router(statistics.router)
+app.include_router(cache.router)
 
 # services raise the exceptions, handlers map them to HTTP responses.
 # routers never catch exceptions manually — they bring them up to here.

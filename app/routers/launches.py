@@ -8,20 +8,10 @@ from fastapi.responses import StreamingResponse
 from app.dependencies import get_cache_service, get_spacex_client
 from app.models import Launch
 from app.services.cache import CacheService
+from app.services.data import fetch_launches
 from app.services.spacex_client import SpaceXClient
 
 router = APIRouter(prefix="/launches", tags=["launches"])
-
-
-async def _fetch_launches(client: SpaceXClient, cache: CacheService) -> list[Launch]:
-    """Grab launches from cache or API — shared by list and detail endpoints."""
-    cached = cache.get("/launches")
-    if cached is not None:
-        return [Launch.model_validate(item) for item in cached]
-
-    launches = await client.get_launches()
-    cache.set("/launches", [l.model_dump(mode="json") for l in launches])
-    return launches
 
 
 def _apply_filters(
@@ -72,9 +62,14 @@ async def list_launches(
     success: bool | None = Query(None, description="Filter by launch success"),
     launchpad_id: str | None = Query(None, description="Filter by launchpad UUID"),
     export: str | None = Query(None, description="Export format: 'csv' for CSV download, omit for JSON"),
+    refresh: bool = Query(False, description="bypass cache and fetch fresh data from SpaceX API"),
 ):
-    """List launches with optional filtering and export options."""
-    launches = await _fetch_launches(client, cache)
+    if refresh:
+        launches = await client.get_launches()
+        cache.set("/launches", [l.model_dump(mode="json") for l in launches])
+    else:
+        launches = await fetch_launches(client, cache)
+
     filtered = _apply_filters(
         launches,
         start_date=start_date,

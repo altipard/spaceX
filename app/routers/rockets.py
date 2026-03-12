@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies import get_cache_service, get_spacex_client
 from app.models import Rocket
@@ -12,7 +12,13 @@ router = APIRouter(prefix="/rockets", tags=["rockets"])
 async def list_rockets(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
+    refresh: bool = Query(False, description="bypass cache and fetch fresh data from SpaceX API"),
 ):
+    if refresh:
+        rockets = await client.get_rockets()
+        cache.set("/rockets", [r.model_dump(mode="json") for r in rockets])
+        return rockets
+
     cached = cache.get("/rockets")
     if cached is not None:
         return [Rocket.model_validate(item) for item in cached]

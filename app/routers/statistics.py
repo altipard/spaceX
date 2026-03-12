@@ -1,22 +1,13 @@
 from fastapi import APIRouter, Depends
 
 from app.dependencies import get_cache_service, get_spacex_client
-from app.models import Launch, Launchpad, Rocket
+from app.models import Launchpad, Rocket
 from app.services import statistics as stats
 from app.services.cache import CacheService
+from app.services.data import fetch_launches
 from app.services.spacex_client import SpaceXClient
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
-
-
-async def _get_all_launches(client: SpaceXClient, cache: CacheService) -> list[Launch]:
-    cached = cache.get("/launches")
-    if cached is not None:
-        return [Launch.model_validate(item) for item in cached]
-
-    launches = await client.get_launches()
-    cache.set("/launches", [l.model_dump(mode="json") for l in launches])
-    return launches
 
 
 async def _get_rockets_map(client: SpaceXClient, cache: CacheService) -> dict[str, str]:
@@ -48,7 +39,7 @@ async def get_success_rate(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
 ):
-    launches = await _get_all_launches(client, cache)
+    launches = await fetch_launches(client, cache)
     rockets_map = await _get_rockets_map(client, cache)
     return stats.success_rate_by_rocket(launches, rockets_map)
 
@@ -58,7 +49,7 @@ async def get_launches_per_site(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
 ):
-    launches = await _get_all_launches(client, cache)
+    launches = await fetch_launches(client, cache)
     launchpads_map = await _get_launchpads_map(client, cache)
     return stats.launches_per_site(launches, launchpads_map)
 
@@ -68,5 +59,5 @@ async def get_launch_frequency(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
 ):
-    launches = await _get_all_launches(client, cache)
+    launches = await fetch_launches(client, cache)
     return stats.launch_frequency(launches)
