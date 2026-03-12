@@ -1,0 +1,65 @@
+version: "3"
+
+silent: true
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmd: task --list-all
+
+  install:
+    desc: Install all dependencies
+    cmd: uv sync
+
+  lock:
+    desc: Regenerate uv.lock from pyproject.toml
+    cmd: uv lock
+
+  upgrade:
+    desc: Upgrade all dependencies
+    cmds:
+      - uv lock --upgrade
+      - uv sync
+
+  run:
+    desc: Start dev server with auto-reload
+    cmd: uv run uvicorn app.main:app --reload
+
+  test:
+    desc: Run all tests
+    cmd: uv run pytest
+
+  test:v:
+    desc: Run tests with verbose output
+    cmd: uv run pytest -v
+
+  test:cov:
+    desc: Run tests with coverage report
+    cmd: uv run pytest --cov=app --cov-report=term-missing
+
+  lint:
+    desc: Run ruff linter
+    cmd: uv run ruff check .
+
+  format:
+    desc: Format code with ruff
+    cmd: uv run ruff format .
+
+  fix:
+    desc: Auto-fix lint issues and format
+    cmds:
+      - uv run ruff check . --fix
+      - uv run ruff format .
+
+  check:
+    desc: Lint + test in one go
+    cmds:
+      - task: lint
+      - task: test
+
+  clean:
+    desc: Remove caches and build artifacts
+    cmds:
+      - cmd: find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
+        ignore_error: true
+      - rm -rf .pytest_cache .ruff_cache htmlcov .coverage
