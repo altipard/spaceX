@@ -27,15 +27,15 @@ def _apply_filters(
     results = launches
 
     if start_date:
-        results = [l for l in results if l.date_utc >= start_date]
+        results = [launch for launch in results if launch.date_utc >= start_date]
     if end_date:
-        results = [l for l in results if l.date_utc <= end_date]
+        results = [launch for launch in results if launch.date_utc <= end_date]
     if rocket_id:
-        results = [l for l in results if l.rocket == rocket_id]
+        results = [launch for launch in results if launch.rocket == rocket_id]
     if success is not None:
-        results = [l for l in results if l.success is success]
+        results = [launch for launch in results if launch.success is success]
     if launchpad_id:
-        results = [l for l in results if l.launchpad == launchpad_id]
+        results = [launch for launch in results if launch.launchpad == launchpad_id]
 
     return results
 
@@ -46,8 +46,18 @@ def _launches_to_csv(launches: list[Launch]) -> str:
     writer = csv.writer(buf)
     writer.writerow(["id", "name", "flight_number", "date_utc", "rocket", "launchpad", "success"])
 
-    for l in launches:
-        writer.writerow([l.id, l.name, l.flight_number, l.date_utc.isoformat(), l.rocket, l.launchpad, l.success])
+    for launch in launches:
+        writer.writerow(
+            [
+                launch.id,
+                launch.name,
+                launch.flight_number,
+                launch.date_utc.isoformat(),
+                launch.rocket,
+                launch.launchpad,
+                launch.success,
+            ]
+        )
 
     return buf.getvalue()
 
@@ -66,7 +76,7 @@ async def list_launches(
 ):
     if refresh:
         launches = await client.get_launches()
-        cache.set("/launches", [l.model_dump(mode="json") for l in launches])
+        cache.set("/launches", [launch.model_dump(mode="json") for launch in launches])
     else:
         launches = await fetch_launches(client, cache)
 

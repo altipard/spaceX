@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.models import Launch
 from app.services.statistics import launch_frequency, launches_per_site, success_rate_by_rocket
@@ -10,7 +10,7 @@ LAUNCHES = [
         id="1",
         name="Mission A",
         flight_number=1,
-        date_utc=datetime(2020, 3, 15, tzinfo=timezone.utc),
+        date_utc=datetime(2020, 3, 15, tzinfo=UTC),
         date_local="2020-03-15T09:00:00-05:00",
         date_precision="hour",
         rocket="r1",
@@ -23,7 +23,7 @@ LAUNCHES = [
         id="2",
         name="Mission B",
         flight_number=2,
-        date_utc=datetime(2020, 3, 28, tzinfo=timezone.utc),
+        date_utc=datetime(2020, 3, 28, tzinfo=UTC),
         date_local="2020-03-28T12:00:00-05:00",
         date_precision="hour",
         rocket="r1",
@@ -36,7 +36,7 @@ LAUNCHES = [
         id="3",
         name="Mission C",
         flight_number=3,
-        date_utc=datetime(2020, 7, 10, tzinfo=timezone.utc),
+        date_utc=datetime(2020, 7, 10, tzinfo=UTC),
         date_local="2020-07-10T10:00:00-05:00",
         date_precision="hour",
         rocket="r2",
@@ -49,7 +49,7 @@ LAUNCHES = [
         id="4",
         name="Mission D",
         flight_number=4,
-        date_utc=datetime(2021, 1, 5, tzinfo=timezone.utc),
+        date_utc=datetime(2021, 1, 5, tzinfo=UTC),
         date_local="2021-01-05T08:00:00-05:00",
         date_precision="hour",
         rocket="r1",

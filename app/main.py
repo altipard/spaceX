@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.exceptions import CacheError, ResourceNotFoundError, SpaceXAPIError
-from app.routers import launches, rockets, launchpads, statistics, cache
+from app.routers import cache, launches, launchpads, rockets, statistics
 from app.services.cache import CacheService
 from app.services.spacex_client import SpaceXClient
 

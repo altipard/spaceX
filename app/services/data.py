@@ -10,5 +10,5 @@ async def fetch_launches(client: SpaceXClient, cache: CacheService) -> list[Laun
         return [Launch.model_validate(item) for item in cached]
 
     launches = await client.get_launches()
-    cache.set("/launches", [l.model_dump(mode="json") for l in launches])
+    cache.set("/launches", [launch.model_dump(mode="json") for launch in launches])
     return launches
