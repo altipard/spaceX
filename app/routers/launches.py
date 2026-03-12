@@ -1,6 +1,9 @@
+import csv
+import io
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 
 from app.dependencies import get_cache_service, get_spacex_client
 from app.models import Launch
@@ -17,7 +20,6 @@ async def _fetch_launches(client: SpaceXClient, cache: CacheService) -> list[Lau
         return [Launch.model_validate(item) for item in cached]
 
     launches = await client.get_launches()
-    # store raw dicts in cache, not pydantic objects
     cache.set("/launches", [l.model_dump(mode="json") for l in launches])
     return launches
 
@@ -48,7 +50,19 @@ def _apply_filters(
     return results
 
 
-@router.get("", response_model=list[Launch])
+def _launches_to_csv(launches: list[Launch]) -> str:
+    """Serialize launches to a CSV string."""
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["id", "name", "flight_number", "date_utc", "rocket", "launchpad", "success"])
+
+    for l in launches:
+        writer.writerow([l.id, l.name, l.flight_number, l.date_utc.isoformat(), l.rocket, l.launchpad, l.success])
+
+    return buf.getvalue()
+
+
+@router.get("")
 async def list_launches(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
@@ -57,9 +71,11 @@ async def list_launches(
     rocket_id: str | None = Query(None, description="Filter by rocket UUID"),
     success: bool | None = Query(None, description="Filter by launch success"),
     launchpad_id: str | None = Query(None, description="Filter by launchpad UUID"),
+    export: str | None = Query(None, description="Export format: 'csv' for CSV download, omit for JSON"),
 ):
+    """List launches with optional filtering and export options."""
     launches = await _fetch_launches(client, cache)
-    return _apply_filters(
+    filtered = _apply_filters(
         launches,
         start_date=start_date,
         end_date=end_date,
@@ -68,6 +84,16 @@ async def list_launches(
         launchpad_id=launchpad_id,
     )
 
+    if export == "csv":
+        content = _launches_to_csv(filtered)
+        return StreamingResponse(
+            iter([content]),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=launches.csv"},
+        )
+
+    return filtered
+
 
 @router.get("/{launch_id}", response_model=Launch)
 async def get_launch(
@@ -75,7 +101,6 @@ async def get_launch(
     client: SpaceXClient = Depends(get_spacex_client),
     cache: CacheService = Depends(get_cache_service),
 ):
-    # try to find it in the cached list first before hitting the API
     cached = cache.get("/launches")
     if cached is not None:
         for item in cached:
